@@ -5,27 +5,27 @@ on:
     paths:
       - 'docs/**'
     branches:
-      - main  # 你的源仓库分支
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-      # 1. 检出源代码仓库
+      # 1. 检出源代码仓库（不需要 token，因为是同一个仓库）
       - name: 检出源代码仓库
         uses: actions/checkout@v4
         with:
           path: source-repo
           
-      # 2. 克隆目标部署仓库（指定分支）
+      # 2. 克隆目标部署仓库（必须用 PAT）
       - name: 克隆目标仓库
         uses: actions/checkout@v4
         with:
           repository: mcmineleng/myzsh-docs
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}  # 这里必须用 PAT
           path: myzsh-docs
-          ref: master  # 改成你的目标仓库实际分支名
+          ref: master
           
       # 3. 设置 Node.js 环境
       - name: 设置 Node.js 环境
@@ -40,14 +40,12 @@ jobs:
           npm install
           npm run docs:build
           
-      # 5. 部署到 myzsh-docs 仓库（从 web/ 复制）
+      # 5. 部署到 myzsh-docs 仓库
       - name: 清空并复制构建产物
         run: |
           cd myzsh-docs
-          # 删除所有文件（保留 .git）
           find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
           cd ..
-          # 从 web/ 复制构建产物
           cp -r source-repo/web/* myzsh-docs/
           
       # 6. 提交并推送
@@ -58,4 +56,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "更新文档：自动部署 $(date '+%Y-%m-%d %H:%M:%S') [skip ci]" || echo "没有需要提交的更改"
-          git push origin main
+          git push origin master
