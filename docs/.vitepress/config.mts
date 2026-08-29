@@ -43,7 +43,7 @@ export default defineConfig({
         },
         lastUpdated: '最后更新于',
         editLink: {
-          pattern: 'https://github.com/mcmineleng/myzsh-docs/edit/main/docs/:path',
+          pattern: 'https://github.com/mcmineleng/myzsh-docs-source/edit/main/docs/:path',
           text: '在 GitHub 上编辑此页'
         },
         darkModeSwitchLabel: '主题',
