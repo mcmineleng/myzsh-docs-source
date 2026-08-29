@@ -1,32 +1,33 @@
-name: Build and Deploy Docs
+name: 构建并部署文档
 
 on:
   push:
     paths:
       - 'docs/**'
     branches:
-      - main  # 或者你的主分支名称
+      - main  # 你的源仓库分支
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-      # 1. 检出主仓库
+      # 1. 检出源代码仓库
       - name: 检出源代码仓库
         uses: actions/checkout@v4
         with:
           path: source-repo
           
-      # 2. 克隆目标部署仓库
+      # 2. 克隆目标部署仓库（指定分支）
       - name: 克隆目标仓库
         uses: actions/checkout@v4
         with:
-          repository: mcmineleng/myzsh-docs  # 目标仓库
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: mcmineleng/myzsh-docs
+          token: ${{ secrets.PAT_TOKEN }}
           path: myzsh-docs
+          ref: master  # 改成你的目标仓库实际分支名
           
-      # 3. 设置 Node.js 22
+      # 3. 设置 Node.js 环境
       - name: 设置 Node.js 环境
         uses: actions/setup-node@v4
         with:
@@ -39,19 +40,17 @@ jobs:
           npm install
           npm run docs:build
           
-      # 5. 清空目标仓库并复制构建产物
-      - name: 部署到 myzsh-docs 仓库
+      # 5. 部署到 myzsh-docs 仓库（从 web/ 复制）
+      - name: 清空并复制构建产物
         run: |
-          # 清空目标仓库（保留 .git）
           cd myzsh-docs
-          # 删除所有文件除了 .git 目录
+          # 删除所有文件（保留 .git）
           find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
           cd ..
+          # 从 web/ 复制构建产物
+          cp -r source-repo/web/* myzsh-docs/
           
-          # 复制构建产物到目标仓库
-          cp -r source-repo/docs/.vuepress/dist/* myzsh-docs/
-          
-      # 6. 提交并推送更改
+      # 6. 提交并推送
       - name: 提交并推送
         working-directory: ./myzsh-docs
         run: |
@@ -59,4 +58,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "更新文档：自动部署 $(date '+%Y-%m-%d %H:%M:%S') [skip ci]" || echo "没有需要提交的更改"
-          git push
+          git push origin main
