@@ -15,6 +15,6 @@
 myzsh theme install powerlevel10k
 ```
 ```shell
-myzsh theme set powerlevel10k
+myzsh theme set powerlevel10k/powerlevel10k
 ```
 <br></br>
